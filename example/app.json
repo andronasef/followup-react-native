@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "react-native-follow-up example",
+    "slug": "react-native-follow-up-example",
+    "version": "1.0.0",
+    "android": {
+      "package": "com.andronasef.followupexample"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-localization"
+    ]
+  }
+}
