@@ -24,4 +24,13 @@ export const zh: FollowUpStrings = {
       verse: '来到祂面前——你会找到平安。',
     },
   ],
+  contact: {
+    title: "你想更多认识祂。",
+    intro: "关于基督，你心里有任何疑问，都可以问。选一个方便你的应用，我们聊聊 — 用你的语言，按你的节奏。",
+    whatsappHint: "回复最快",
+    telegramHint: "私密轻便",
+    messengerHint: "如果你用 Facebook",
+    emailPrompt: "更喜欢邮件？",
+    emailAction: "写信给我们",
+  },
 };

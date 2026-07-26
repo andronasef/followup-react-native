@@ -24,4 +24,13 @@ export const en: FollowUpStrings = {
       verse: "Come to Him — and you'll find peace.",
     },
   ],
+  contact: {
+    title: "You wanted to hear more about Him.",
+    intro: "Whatever you're wondering about Christ, ask it. Choose the app that suits you and we'll talk — in your own language, at your own pace.",
+    whatsappHint: "Fastest reply",
+    telegramHint: "Private and lightweight",
+    messengerHint: "If you're on Facebook",
+    emailPrompt: "Prefer email?",
+    emailAction: "Write to us",
+  },
 };

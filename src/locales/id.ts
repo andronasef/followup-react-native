@@ -24,4 +24,13 @@ export const id: FollowUpStrings = {
       verse: 'Datanglah kepada-Nya — dan kau akan menemukan damai.',
     },
   ],
+  contact: {
+    title: "Anda ingin mengenal Dia lebih jauh.",
+    intro: "Apa pun yang Anda pertanyakan tentang Kristus, tanyakan saja. Pilih aplikasi yang paling nyaman bagi Anda dan mari bicara — dalam bahasa Anda, sesuai waktu Anda.",
+    whatsappHint: "Balasan tercepat",
+    telegramHint: "Privat dan ringan",
+    messengerHint: "Kalau Anda di Facebook",
+    emailPrompt: "Lebih suka email?",
+    emailAction: "Tulis kepada kami",
+  },
 };

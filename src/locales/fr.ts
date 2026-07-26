@@ -28,4 +28,13 @@ export const fr: FollowUpStrings = {
       verse: 'Viens à lui — et tu trouveras la paix.',
     },
   ],
+  contact: {
+    title: "Vous vouliez en savoir plus sur Lui.",
+    intro: "Quelle que soit votre question sur le Christ, posez-la. Choisissez l'application qui vous convient et parlons — dans votre langue, à votre rythme.",
+    whatsappHint: "Réponse la plus rapide",
+    telegramHint: "Privé et léger",
+    messengerHint: "Si vous êtes sur Facebook",
+    emailPrompt: "Vous préférez l'e-mail ?",
+    emailAction: "Écrivez-nous",
+  },
 };

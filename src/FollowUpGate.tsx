@@ -6,14 +6,17 @@ import { FollowUpTracker } from './FollowUpTracker';
 import { resolve, isRtl as resolveIsRtl } from './locales';
 import { TeaserPopup } from './components/TeaserPopup';
 import { SalvationFlow } from './components/SalvationFlow';
+import { ContactScreen } from './components/ContactScreen';
+import {
+  CONTACT_FALLBACK_PAGE_URL,
+  DEFAULT_CONTACT_CONFIG_URL,
+  loadContactConfig,
+  type ContactConfig,
+} from './contactConfig';
 import type { FollowUpStrings } from './types';
 import { PackageAnalyticsProvider, usePackageAnalytics } from './analytics/AnalyticsProvider';
 import type { PackageAnalytics } from './analytics/types';
-
-/** Opened via `expo-linking` when the visitor taps the final "interested"
- * button. Pass your own URL to override, or `null` to disable the URL
- * launch entirely (e.g. when relying solely on `onInterested`). */
-export const DEFAULT_CTA_URL = 'https://andronasef.github.io/links/19';
+import { subscribeToDebugTriggers } from './debug';
 
 export interface FollowUpGateProps {
   children: React.ReactNode;
@@ -21,7 +24,16 @@ export interface FollowUpGateProps {
   openThreshold?: number;
   /** In milliseconds. Defaults to 10000. */
   delay?: number;
+  /** Set this to open a URL via `expo-linking` when the visitor taps the
+   * final "interested" button, instead of showing the built-in
+   * `ContactScreen`. Left undefined (the default), the flow ends on the
+   * contact screen with the handles from `contactConfigUrl`. */
   ctaUrl?: string | null;
+  /** Where `ContactScreen` reads its WhatsApp / Telegram / Messenger / email
+   * handles from, so they can change without an app release. Point it at
+   * your own hosted JSON to use your own contacts. Ignored when `ctaUrl` is
+   * set. */
+  contactConfigUrl?: string;
   /** Called when the visitor taps the final "interested" button, if
    * provided. Runs alongside `ctaUrl` when both are set. */
   onInterested?: () => Promise<void> | void;
@@ -32,7 +44,7 @@ export interface FollowUpGateProps {
   analytics?: PackageAnalytics;
 }
 
-type Stage = 'idle' | 'teaser' | 'flow';
+type Stage = 'idle' | 'teaser' | 'flow' | 'contact';
 
 /** Wraps a subtree (typically your app's root screen) and, once the app has
  * been opened `openThreshold` times, waits `delay` and then shows the
@@ -50,10 +62,18 @@ export function FollowUpGate({ analytics, ...props }: FollowUpGateProps) {
   );
 }
 
-function Gate({ children, openThreshold = 40, delay = 10000, ctaUrl = DEFAULT_CTA_URL, onInterested }: Omit<FollowUpGateProps, 'analytics'>) {
+function Gate({
+  children,
+  openThreshold = 40,
+  delay = 10000,
+  ctaUrl,
+  contactConfigUrl = DEFAULT_CONTACT_CONFIG_URL,
+  onInterested,
+}: Omit<FollowUpGateProps, 'analytics'>) {
   const [stage, setStage] = useState<Stage>('idle');
   const [strings, setStrings] = useState<FollowUpStrings | null>(null);
   const [rtl, setRtl] = useState(false);
+  const [contact, setContact] = useState<ContactConfig | null>(null);
   const trackerRef = useRef<FollowUpTracker | null>(null);
   const mountedRef = useRef(true);
 
@@ -96,15 +116,64 @@ function Gate({ children, openThreshold = 40, delay = 10000, ctaUrl = DEFAULT_CT
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally runs once per mount, mirroring the Dart port's initState.
   }, []);
 
+  // Lets `debugShowTeaser()` / `debugShowFlow()` / `debugShowContact()` jump
+  // straight to a stage without the open-count threshold or the delay. These
+  // never mark the flow as shown, so the real gate still fires later.
+  useEffect(
+    () =>
+      subscribeToDebugTriggers(async ({ stage: target, locale, config }) => {
+        const languageCode = locale ?? Localization.getLocales()[0]?.languageCode ?? 'en';
+        setStrings(resolve(languageCode));
+        setRtl(resolveIsRtl(languageCode));
+
+        if (target !== 'contact') {
+          setStage(target);
+          return;
+        }
+        const resolved = config ?? (await loadContactConfig({ url: contactConfigUrl }));
+        if (!mountedRef.current) return;
+        if (!resolved) {
+          console.warn(`follow_up: no contact config available from ${contactConfigUrl}`);
+          return;
+        }
+        setContact(resolved);
+        setStage('contact');
+      }),
+    [contactConfigUrl]
+  );
+
   const respond = async (interested: boolean) => {
     analytics.logEvent('response', { interested });
     await trackerRef.current?.markShown();
-    setStage('idle');
-    if (!interested) return;
+    if (!interested) {
+      setStage('idle');
+      return;
+    }
     await onInterested?.();
-    if (!ctaUrl) return;
-    await Linking.openURL(ctaUrl);
-    analytics.logEvent('cta_opened', { url: ctaUrl });
+
+    if (ctaUrl) {
+      setStage('idle');
+      await Linking.openURL(ctaUrl);
+      analytics.logEvent('cta_opened', { url: ctaUrl });
+      return;
+    }
+
+    const config = await loadContactConfig({ url: contactConfigUrl });
+    if (!mountedRef.current) return;
+
+    // No config and nothing cached — send them to the web page, which loads
+    // the same handles itself once they have a connection.
+    if (!config) {
+      setStage('idle');
+      analytics.logEvent('contact_fallback_url');
+      await Linking.openURL(CONTACT_FALLBACK_PAGE_URL);
+      return;
+    }
+
+    setContact(config);
+    setStage('contact');
+    analytics.logEvent('contact_shown');
+    analytics.screenView('followup_contact');
   };
 
   return (
@@ -125,6 +194,18 @@ function Gate({ children, openThreshold = 40, delay = 10000, ctaUrl = DEFAULT_CT
       {strings && stage === 'flow' && (
         <Modal visible animationType="slide" presentationStyle="fullScreen" onRequestClose={() => {}}>
           <SalvationFlow strings={strings} isRtl={rtl} onInterested={() => respond(true)} onNotNow={() => respond(false)} />
+        </Modal>
+      )}
+      {strings && contact && stage === 'contact' && (
+        // Dismissible, unlike the flow — by this point the visitor has already
+        // answered, and trapping someone who wanted to talk defeats the point.
+        <Modal visible animationType="slide" presentationStyle="fullScreen" onRequestClose={() => setStage('idle')}>
+          <ContactScreen
+            config={contact}
+            strings={strings.contact}
+            isRtl={rtl}
+            onChannelOpened={(channel) => analytics.logEvent('contact_channel_opened', { channel })}
+          />
         </Modal>
       )}
     </>

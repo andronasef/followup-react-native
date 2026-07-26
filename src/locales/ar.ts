@@ -24,4 +24,13 @@ export const ar: FollowUpStrings = {
       verse: 'تعالَ إليه — وستجد السلام.',
     },
   ],
+  contact: {
+    title: "أردتَ أن تعرف عنه أكثر.",
+    intro: "مهما كان سؤالك عن المسيح، اسأله. اختر التطبيق الذي يناسبك ولنتحدّث — بلغتك، وعلى مهلك.",
+    whatsappHint: "أسرع رد",
+    telegramHint: "خاص وخفيف",
+    messengerHint: "إن كنت على فيسبوك",
+    emailPrompt: "تفضّل البريد الإلكتروني؟",
+    emailAction: "اكتب لنا",
+  },
 };

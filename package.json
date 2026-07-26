@@ -1,6 +1,6 @@
 {
   "name": "react-native-follow-up",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Forced, localized gospel-invitation flow for React Native/Expo apps: shows after N app opens with a full-screen animated presentation.",
   "main": "lib/index.js",
   "module": "lib/index.mjs",

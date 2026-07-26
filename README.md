@@ -25,7 +25,8 @@ package.
   Mandarin, Russian, Indonesian, and Swahili — auto-detected from the device
   locale via `expo-localization`, with RTL layout for Arabic.
 - Final response: an "interested" callback (`onInterested`) and/or a
-  configurable `ctaUrl` opened via `expo-linking`, or "not now" — either way
+  built-in contact screen (WhatsApp / Telegram / Messenger / email), or
+  "not now" — either way
   it's shown only once per install.
 
 ## Getting started
@@ -74,8 +75,9 @@ flow without waiting for 40 real app opens.
 <FollowUpGate
   openThreshold={40}      // app opens before the flow can trigger
   delay={10000}           // ms to wait after the threshold is hit
-  ctaUrl={'https://...'}  // opened on "interested"; pass null to disable
-  onInterested={() => {}} // called on "interested", alongside ctaUrl
+  contactConfigUrl={'https://...'} // where the contact handles come from
+  ctaUrl={'https://...'}  // open a URL instead of the contact screen
+  onInterested={() => {}} // called on "interested", before either
   analytics={undefined}   // optional; see "Analytics" below
 >
   {children}
@@ -86,6 +88,53 @@ flow without waiting for 40 real app opens.
 `create()`, `getOpenCount()`, `getHasBeenShown()`, `markShown()`,
 `recordOpen()`, `shouldTrigger({ threshold })`, `debugReset()`,
 `debugForceReady({ threshold })`.
+
+## Contact screen
+
+The flow ends by handing the visitor off to whichever messaging app they
+already use. The handles are fetched at that moment from a hosted JSON file:
+
+```json
+{
+  "whatsapp": "201234567890",
+  "telegram": "yourusername",
+  "messenger": "yourpage",
+  "email": "you@example.com"
+}
+```
+
+Every key is optional — omit one and its button doesn't appear. `whatsapp` is
+digits only, with the country code and no `+`.
+
+The default is `DEFAULT_CONTACT_CONFIG_URL`
+(<https://followup-web-simple.pages.dev/config.json>), which also backs the
+web page at <https://followup-web-simple.pages.dev>. Host your own and pass
+`contactConfigUrl`.
+
+The last successful fetch is cached in AsyncStorage, so a visitor with no
+connection still sees the screen. If there's no cache either, the flow opens
+the web page instead — it loads the same config once they're online.
+
+To keep the old behaviour (open a URL instead of the contact screen), set
+`ctaUrl`.
+
+## Previewing without waiting
+
+These jump straight to any stage, skipping the open-count threshold and the
+delay. They never set the "already shown" flag, so the real gate still fires
+later. A `<FollowUpGate>` must be mounted somewhere.
+
+```ts
+import { debugShowTeaser, debugShowFlow, debugShowContact, debugReset, debugForceReady }
+  from 'react-native-follow-up';
+
+debugShowTeaser({ locale: 'ar' });
+debugShowFlow();
+debugShowContact({ config: { whatsapp: '201234567890' } });
+
+await debugReset();      // back to a fresh install
+await debugForceReady(); // next real mount triggers for real
+```
 
 ## Analytics
 

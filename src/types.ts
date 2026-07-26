@@ -8,8 +8,22 @@ export interface FollowUpScene {
   reference?: string;
 }
 
+/** Copy for the contact screen shown after the visitor says they'd like to
+ * hear more. The channel names (WhatsApp, Telegram, Messenger) are brand
+ * names and stay untranslated — only the hints under them are localized. */
+export interface ContactStrings {
+  title: string;
+  intro: string;
+  whatsappHint: string;
+  telegramHint: string;
+  messengerHint: string;
+  /** Sits before `emailAction` on one line: "Prefer email? Write to us". */
+  emailPrompt: string;
+  emailAction: string;
+}
+
 /** All localized copy for one language: the teaser popup, the two final
- * response buttons, and the five narrative scenes. */
+ * response buttons, the five narrative scenes, and the contact screen. */
 export interface FollowUpStrings {
   popupHeadline: string;
   popupBody: string;
@@ -17,4 +31,5 @@ export interface FollowUpStrings {
   interestedButton: string;
   notNowButton: string;
   scenes: [FollowUpScene, FollowUpScene, FollowUpScene, FollowUpScene, FollowUpScene];
+  contact: ContactStrings;
 }

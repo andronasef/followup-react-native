@@ -24,4 +24,13 @@ export const sw: FollowUpStrings = {
       verse: 'Njoo kwake — nawe utapata amani.',
     },
   ],
+  contact: {
+    title: "Ulitaka kujua zaidi kumhusu Yeye.",
+    intro: "Lolote unalojiuliza kuhusu Kristo, uliza tu. Chagua programu inayokufaa na tuzungumze — kwa lugha yako, kwa wakati wako.",
+    whatsappHint: "Jibu la haraka zaidi",
+    telegramHint: "Faragha na nyepesi",
+    messengerHint: "Kama uko Facebook",
+    emailPrompt: "Unapendelea barua pepe?",
+    emailAction: "Tuandikie",
+  },
 };

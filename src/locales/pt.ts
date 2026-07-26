@@ -24,4 +24,13 @@ export const pt: FollowUpStrings = {
       verse: 'Venha a Ele — e você encontrará paz.',
     },
   ],
+  contact: {
+    title: "Você quis saber mais sobre Ele.",
+    intro: "Seja qual for a sua dúvida sobre Cristo, pergunte. Escolha o app que combina com você e vamos conversar — no seu idioma, no seu tempo.",
+    whatsappHint: "Resposta mais rápida",
+    telegramHint: "Privado e leve",
+    messengerHint: "Se você usa o Facebook",
+    emailPrompt: "Prefere e-mail?",
+    emailAction: "Escreva para nós",
+  },
 };

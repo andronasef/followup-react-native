@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.2.0
+
+The flow now ends on a contact screen instead of an external link, with
+handles loaded from a hosted config file.
+
+### Added
+
+- `<ContactScreen>` — WhatsApp, Telegram, Messenger, email. Same warm
+  parchment styling as the scenes, localized to all 10 languages, RTL-aware.
+  Shown automatically when the visitor taps "interested".
+- `loadContactConfig()`, `parseContactConfig()`, `availableChannels()`,
+  `contactUri()`, `DEFAULT_CONTACT_CONFIG_URL`, `CONTACT_FALLBACK_PAGE_URL`.
+  Handles come from a hosted JSON file, so the number you're reachable on can
+  change without an app update. The last good fetch is cached in
+  AsyncStorage; with no cache and no network the flow opens the web page,
+  which loads the same config itself.
+- `contactConfigUrl` prop on `FollowUpGate` to point at your own JSON.
+- `debugShowTeaser()`, `debugShowFlow()`, `debugShowContact()`,
+  `debugReset()`, `debugForceReady()` — jump straight to any stage without
+  waiting out 40 app opens and the delay. Never marks the flow as shown, so
+  the real gate still fires afterwards.
+- `ContactStrings` on `FollowUpStrings`, and events `contact_shown`,
+  `contact_channel_opened` (`channel`), `contact_fallback_url`.
+
+### Changed
+
+- **Breaking:** `ctaUrl` now defaults to undefined (contact screen) rather
+  than a hardcoded link, and `DEFAULT_CTA_URL` is no longer exported. Set
+  `ctaUrl` explicitly to keep opening a URL.
+- **Breaking:** `FollowUpStrings` gains a required `contact` field. Only
+  affects code that builds `FollowUpStrings` by hand.
+
 ## 0.1.0
 
 Analytics support — the package now emits events, and never initializes an
