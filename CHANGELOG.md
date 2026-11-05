@@ -11,6 +11,8 @@
 
 ### Changed
 
+- Distributed via GitHub (`npm install github:andronasef/followup-react-native`); built `lib/` is now committed.
+
 - Closing the popup defers the invitation; choosing "Not Right Now" also snoozes it instead of permanently suppressing future prompts.
 - Updated the invitation scenes and contact messages across supported locales.
 
@@ -44,6 +46,8 @@ handles loaded from a hosted config file.
   `contact_channel_opened` (`channel`), `contact_fallback_url`.
 
 ### Changed
+
+- Distributed via GitHub (`npm install github:andronasef/followup-react-native`); built `lib/` is now committed.
 
 - **Breaking:** `ctaUrl` now defaults to undefined (contact screen) rather
   than a hardcoded link, and `DEFAULT_CTA_URL` is no longer exported. Set
@@ -84,6 +88,8 @@ analytics SDK.
   dependencies and that the package declares no native code.
 
 ### Changed
+
+- Distributed via GitHub (`npm install github:andronasef/followup-react-native`); built `lib/` is now committed.
 
 - `"sideEffects": false` so bundlers can tree-shake the package.
 - Test suite moved from `ts-jest`/node to the `react-native` jest preset with

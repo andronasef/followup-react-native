@@ -32,9 +32,15 @@ package.
 
 ## Getting started
 
+This package is installed straight from GitHub (it is not on npm). The built
+`lib/` is committed, so no build step is needed:
+
 ```sh
-npx expo install react-native-follow-up react-native-reanimated react-native-svg @react-native-async-storage/async-storage expo-linking expo-localization
+npm install github:andronasef/followup-react-native
+npx expo install react-native-reanimated react-native-svg @react-native-async-storage/async-storage expo-linking expo-localization
 ```
+
+Pin a release with a tag, e.g. `github:andronasef/followup-react-native#v0.3.0`.
 
 `react-native-reanimated` requires its Babel plugin — add it to your
 `babel.config.js` (see the [Reanimated install docs](https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/getting-started)
