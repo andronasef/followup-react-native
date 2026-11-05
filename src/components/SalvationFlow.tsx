@@ -4,6 +4,7 @@ import { useSharedValue, withTiming, Easing } from 'react-native-reanimated';
 import type { FollowUpStrings, FollowUpScene } from '../types';
 import { colors } from '../colors';
 import { SceneFrame } from './SceneFrame';
+import { SunGlow, GlowingIllustration } from './SunGlow';
 import { FadeSlideText } from './FadeSlideText';
 import { Fade } from './Fade';
 import { ResponseButtons } from './ResponseButtons';
@@ -20,7 +21,7 @@ import { HeartOutline } from './illustrations/HeartOutline';
 // Per-scene timing, in seconds: when the "next" affordance / response
 // buttons should reveal after the scene's content has settled. Ported
 // verbatim from the Flutter package's `_settleSeconds`.
-const SETTLE_SECONDS = [2.4, 2.9, 2.1, 3.4, 2.9];
+const SETTLE_SECONDS = [2.6, 2.2];
 const BUTTON_DELAY_SECONDS = 2.0;
 const BUTTON_FADE_SECONDS = 0.5;
 
@@ -34,8 +35,19 @@ function RefLine({ text, isRtl }: { text: string; isRtl: boolean }) {
   );
 }
 
-function SceneContent({ sceneIndex, scene, isRtl }: { sceneIndex: number; scene: FollowUpScene; isRtl: boolean }) {
-  const totalSeconds = SETTLE_SECONDS[sceneIndex] + BUTTON_DELAY_SECONDS + BUTTON_FADE_SECONDS;
+function SceneContent({
+  sceneIndex,
+  scene,
+  isRtl,
+  totalCount,
+}: {
+  sceneIndex: number;
+  scene: FollowUpScene;
+  isRtl: boolean;
+  totalCount: number;
+}) {
+  const settleIdx = Math.min(sceneIndex, SETTLE_SECONDS.length - 1);
+  const totalSeconds = SETTLE_SECONDS[settleIdx] + BUTTON_DELAY_SECONDS + BUTTON_FADE_SECONDS;
   const progress = useSharedValue(0);
 
   useEffect(() => {
@@ -47,13 +59,64 @@ function SceneContent({ sceneIndex, scene, isRtl }: { sceneIndex: number; scene:
   const textDir = isRtl ? ('rtl' as const) : ('ltr' as const);
   const b = (start: number, dur: number) => useBeat(progress, totalSeconds, start, dur);
 
+  if (totalCount === 2) {
+    if (sceneIndex === 0) {
+      return (
+        <SceneFrame>
+          <GlowingIllustration glowOpacity={0.72}>
+            <Fade growth={b(0.1, 0.55)}>
+              <AnimatedCross growth={b(0.1, 0.55)} height={110} />
+            </Fade>
+          </GlowingIllustration>
+          {!!scene.kicker && (
+            <FadeSlideText growth={b(0.2, 0.75)} style={styles.gapSmall}>
+              <Text style={[styles.kicker, { writingDirection: textDir }]}>{scene.kicker}</Text>
+            </FadeSlideText>
+          )}
+          <FadeSlideText growth={b(0.9, 0.75)} style={styles.gapSmall}>
+            <Text style={[styles.headlineMd, { writingDirection: textDir }]}>{scene.headline}</Text>
+          </FadeSlideText>
+          {!!scene.verse && (
+            <FadeSlideText growth={b(1.8, 0.75)} style={styles.gapSmall}>
+              <Text style={[styles.verse, { writingDirection: textDir }]}>{scene.verse}</Text>
+            </FadeSlideText>
+          )}
+          {!!scene.reference && (
+            <FadeSlideText growth={b(2.4, 0.7)} style={styles.gapSmall}>
+              <RefLine text={scene.reference} isRtl={isRtl} />
+            </FadeSlideText>
+          )}
+        </SceneFrame>
+      );
+    }
+    return (
+      <SceneFrame>
+        <GlowingIllustration glowOpacity={0.6}>
+          <Fade growth={b(0, 0.7)}>
+            <HeartOutline growth={b(0, 0.7)} size={120} />
+          </Fade>
+        </GlowingIllustration>
+        <FadeSlideText growth={b(0.2, 0.75)} style={styles.gapMd}>
+          <Text style={[styles.headlineLg, { writingDirection: textDir }]}>{scene.headline}</Text>
+        </FadeSlideText>
+        {!!scene.verse && (
+          <FadeSlideText growth={b(1.1, 0.75)} style={styles.gapTop}>
+            <Text style={[styles.verseGold, { writingDirection: textDir }]}>{scene.verse}</Text>
+          </FadeSlideText>
+        )}
+      </SceneFrame>
+    );
+  }
+
   switch (sceneIndex) {
     case 0:
       return (
-        <SceneFrame sunOpacity={0.55}>
-          <Fade growth={b(0, 0.6)}>
-            <BrokenWorldIllustration growth={b(0, 0.6)} />
-          </Fade>
+        <SceneFrame>
+          <GlowingIllustration glowOpacity={0.55}>
+            <Fade growth={b(0, 0.6)}>
+              <BrokenWorldIllustration growth={b(0, 0.6)} />
+            </Fade>
+          </GlowingIllustration>
           {!!scene.kicker && (
             <FadeSlideText growth={b(0.2, 0.75)} style={styles.gapTop}>
               <Text style={[styles.kicker, { writingDirection: textDir }]}>{scene.kicker}</Text>
@@ -84,10 +147,12 @@ function SceneContent({ sceneIndex, scene, isRtl }: { sceneIndex: number; scene:
       );
     case 2:
       return (
-        <SceneFrame sunOpacity={0.6}>
-          <Fade growth={b(0, 0.6)}>
-            <LightRays growth={b(0, 0.6)} />
-          </Fade>
+        <SceneFrame>
+          <GlowingIllustration glowOpacity={0.6}>
+            <Fade growth={b(0, 0.6)}>
+              <LightRays growth={b(0, 0.6)} />
+            </Fade>
+          </GlowingIllustration>
           {!!scene.kicker && (
             <FadeSlideText growth={b(0.2, 0.75)} style={styles.gapSmall}>
               <Text style={[styles.kickerLg, { writingDirection: textDir }]}>{scene.kicker}</Text>
@@ -100,10 +165,12 @@ function SceneContent({ sceneIndex, scene, isRtl }: { sceneIndex: number; scene:
       );
     case 3:
       return (
-        <SceneFrame sunOpacity={0.72}>
-          <Fade growth={b(0.1, 0.55)}>
-            <AnimatedCross growth={b(0.1, 0.55)} />
-          </Fade>
+        <SceneFrame>
+          <GlowingIllustration glowOpacity={0.72}>
+            <Fade growth={b(0.1, 0.55)}>
+              <AnimatedCross growth={b(0.1, 0.55)} />
+            </Fade>
+          </GlowingIllustration>
           <FadeSlideText growth={b(1.2, 0.75)} style={styles.gapMd}>
             <Text style={[styles.headlineMd, { writingDirection: textDir }]}>{scene.headline}</Text>
           </FadeSlideText>
@@ -121,10 +188,12 @@ function SceneContent({ sceneIndex, scene, isRtl }: { sceneIndex: number; scene:
       );
     default:
       return (
-        <SceneFrame sunOpacity={0.6}>
-          <Fade growth={b(0, 0.7)}>
-            <HeartOutline growth={b(0, 0.7)} />
-          </Fade>
+        <SceneFrame>
+          <GlowingIllustration glowOpacity={0.6}>
+            <Fade growth={b(0, 0.7)}>
+              <HeartOutline growth={b(0, 0.7)} size={120} />
+            </Fade>
+          </GlowingIllustration>
           <FadeSlideText growth={b(0.2, 0.75)} style={styles.gapMd}>
             <Text style={[styles.headlineLg, { writingDirection: textDir }]}>{scene.headline}</Text>
           </FadeSlideText>
@@ -139,14 +208,15 @@ function SceneContent({ sceneIndex, scene, isRtl }: { sceneIndex: number; scene:
 }
 
 function RevealNext({ sceneIndex, onAdvance }: { sceneIndex: number; onAdvance: () => void }) {
-  const totalSeconds = SETTLE_SECONDS[sceneIndex] + BUTTON_DELAY_SECONDS + BUTTON_FADE_SECONDS;
+  const settleIdx = Math.min(sceneIndex, SETTLE_SECONDS.length - 1);
+  const totalSeconds = SETTLE_SECONDS[settleIdx] + BUTTON_DELAY_SECONDS + BUTTON_FADE_SECONDS;
   const progress = useSharedValue(0);
   useEffect(() => {
     progress.value = 0;
     progress.value = withTiming(1, { duration: totalSeconds * 1000, easing: Easing.linear });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const start = SETTLE_SECONDS[sceneIndex] + BUTTON_DELAY_SECONDS;
+  const start = SETTLE_SECONDS[settleIdx] + BUTTON_DELAY_SECONDS;
   const reveal = useBeat(progress, totalSeconds, start, totalSeconds - start);
   return (
     <FadeSlideText growth={reveal}>
@@ -166,14 +236,15 @@ function RevealResponse({
   onInterested: () => void;
   onNotNow: () => void;
 }) {
-  const totalSeconds = SETTLE_SECONDS[sceneIndex] + BUTTON_DELAY_SECONDS + BUTTON_FADE_SECONDS;
+  const settleIdx = Math.min(sceneIndex, SETTLE_SECONDS.length - 1);
+  const totalSeconds = SETTLE_SECONDS[settleIdx] + BUTTON_DELAY_SECONDS + BUTTON_FADE_SECONDS;
   const progress = useSharedValue(0);
   useEffect(() => {
     progress.value = 0;
     progress.value = withTiming(1, { duration: totalSeconds * 1000, easing: Easing.linear });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const start = SETTLE_SECONDS[sceneIndex] + BUTTON_DELAY_SECONDS;
+  const start = SETTLE_SECONDS[settleIdx] + BUTTON_DELAY_SECONDS;
   const reveal = useBeat(progress, totalSeconds, start, totalSeconds - start);
   return (
     <ResponseButtons
@@ -186,7 +257,7 @@ function RevealResponse({
   );
 }
 
-/** Full-screen narrative: five scenes then a response. Each scene reveals a
+/** Full-screen narrative: scenes then a response. Each scene reveals a
  * "next" button 2s after its entrance animation settles; the final scene
  * reveals response buttons instead. Not dismissible — the host FollowUpGate
  * renders this in a Modal with `onRequestClose` swallowed. */
@@ -220,7 +291,13 @@ export function SalvationFlow({
 
   return (
     <View style={styles.fill}>
-      <SceneContent key={sceneIndex} sceneIndex={sceneIndex} scene={scenes[sceneIndex]} isRtl={isRtl} />
+      <SceneContent
+        key={sceneIndex}
+        sceneIndex={sceneIndex}
+        scene={scenes[sceneIndex]}
+        isRtl={isRtl}
+        totalCount={scenes.length}
+      />
       <View style={styles.dotsWrap} pointerEvents="none">
         <SceneDots count={scenes.length} current={sceneIndex} isRtl={isRtl} />
       </View>

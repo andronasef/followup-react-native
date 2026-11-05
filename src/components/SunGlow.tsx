@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { View, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from 'react-native-reanimated';
 import Svg, { Defs, RadialGradient, Stop, Circle } from 'react-native-svg';
 
@@ -32,5 +33,54 @@ export function SunGlow({ opacity = 0.6, size = 380 }: { opacity?: number; size?
         <Circle cx={size / 2} cy={size / 2} r={size / 2} fill="url(#glow)" />
       </Svg>
     </Animated.View>
+  );
+}
+
+/** Puts a SunGlow directly behind child, centered on it.
+ *
+ * The glow is laid out with negative margins from the center, so a halo far larger
+ * than the illustration never changes the surrounding layout — it
+ * just bleeds out around the art and tracks it wherever the scene lands.
+ */
+export function GlowingIllustration({
+  glowOpacity = 0.6,
+  glowSize = 380,
+  illustrationSize = 120,
+  children,
+}: {
+  glowOpacity?: number;
+  glowSize?: number;
+  /** Size of illustration footprint (defaults to 120). */
+  illustrationSize?: number;
+  children: React.ReactNode;
+}) {
+  if (glowOpacity <= 0) return <>{children}</>;
+  const offset = (illustrationSize - glowSize) / 2;
+  return (
+    <View
+      style={{
+        width: illustrationSize,
+        height: illustrationSize,
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+      }}
+    >
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          top: offset,
+          left: offset,
+          width: glowSize,
+          height: glowSize,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <SunGlow opacity={glowOpacity} size={glowSize} />
+      </View>
+      {children}
+    </View>
   );
 }

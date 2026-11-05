@@ -23,6 +23,7 @@ export default function App() {
       key={gateGeneration}
       openThreshold={DEMO_THRESHOLD}
       delay={DEMO_DELAY_MS}
+      copyVariant={0}
       onInterested={async () => {
         Alert.alert('Thanks for your interest!', 'onInterested callback fired');
       }}

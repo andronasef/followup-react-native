@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const OPEN_COUNT_KEY = 'follow_up_open_count';
 const SHOWN_KEY = 'follow_up_shown';
+const LAST_DISMISSED_OPEN_KEY = 'follow_up_last_dismissed_open';
 
 /** Guards against double-counting an open across re-renders within the same
  * process lifetime — module-level, mirroring the Dart port's static guard. */
@@ -25,8 +26,20 @@ export class FollowUpTracker {
     return (await AsyncStorage.getItem(SHOWN_KEY)) === 'true';
   }
 
+  async getLastDismissedOpen(): Promise<number | null> {
+    const raw = await AsyncStorage.getItem(LAST_DISMISSED_OPEN_KEY);
+    return raw ? parseInt(raw, 10) : null;
+  }
+
   async markShown(): Promise<void> {
     await AsyncStorage.setItem(SHOWN_KEY, 'true');
+  }
+
+  /** Records that the visitor dismissed the teaser popup, noting the current
+   * open count so we can snooze reappearance. */
+  async recordDismiss(): Promise<void> {
+    const count = await this.getOpenCount();
+    await AsyncStorage.setItem(LAST_DISMISSED_OPEN_KEY, String(count));
   }
 
   /** Increments the open counter once per process lifetime. Safe to call on
@@ -38,15 +51,25 @@ export class FollowUpTracker {
     await AsyncStorage.setItem(OPEN_COUNT_KEY, String(count + 1));
   }
 
-  async shouldTrigger(opts: { threshold: number }): Promise<boolean> {
-    const [shown, count] = await Promise.all([this.getHasBeenShown(), this.getOpenCount()]);
-    return !shown && count >= opts.threshold;
+  async shouldTrigger(opts: { threshold: number; reappearInterval?: number }): Promise<boolean> {
+    const [shown, count, lastDismissed] = await Promise.all([
+      this.getHasBeenShown(),
+      this.getOpenCount(),
+      this.getLastDismissedOpen(),
+    ]);
+    if (shown) return false;
+    if (count < opts.threshold) return false;
+    const interval = opts.reappearInterval ?? 10;
+    if (lastDismissed !== null && count - lastDismissed < interval) {
+      return false;
+    }
+    return true;
   }
 
   /** Clears all follow-up state. QA-only, not for production use. */
   async debugReset(): Promise<void> {
     recordedThisSession = false;
-    await AsyncStorage.multiRemove([OPEN_COUNT_KEY, SHOWN_KEY]);
+    await AsyncStorage.multiRemove([OPEN_COUNT_KEY, SHOWN_KEY, LAST_DISMISSED_OPEN_KEY]);
   }
 
   /** Clears state and pre-sets the open count to `threshold`, so the very

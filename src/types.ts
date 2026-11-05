@@ -20,6 +20,8 @@ export interface ContactStrings {
   /** Sits before `emailAction` on one line: "Prefer email? Write to us". */
   emailPrompt: string;
   emailAction: string;
+  /** Prefilled message placed in the text input when opening messaging apps or email. */
+  prefilledMessage?: string;
 }
 
 /** All localized copy for one language: the teaser popup, the two final
@@ -30,6 +32,6 @@ export interface FollowUpStrings {
   learnMoreButton: string;
   interestedButton: string;
   notNowButton: string;
-  scenes: [FollowUpScene, FollowUpScene, FollowUpScene, FollowUpScene, FollowUpScene];
+  scenes: readonly FollowUpScene[];
   contact: ContactStrings;
 }

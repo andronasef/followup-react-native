@@ -49,4 +49,22 @@ describe('FollowUpTracker', () => {
     expect(await tracker.getOpenCount()).toBe(3);
     expect(await tracker.shouldTrigger({ threshold: 3 })).toBe(true);
   });
+
+  it('recordDismiss snoozes trigger until reappearInterval is reached', async () => {
+    const tracker = await FollowUpTracker.create();
+    await AsyncStorage.setItem('follow_up_open_count', '40');
+
+    expect(await tracker.shouldTrigger({ threshold: 40, reappearInterval: 10 })).toBe(true);
+    await tracker.recordDismiss();
+    expect(await tracker.getLastDismissedOpen()).toBe(40);
+    expect(await tracker.shouldTrigger({ threshold: 40, reappearInterval: 10 })).toBe(false);
+
+    // 5 more opens: still snoozed
+    await AsyncStorage.setItem('follow_up_open_count', '45');
+    expect(await tracker.shouldTrigger({ threshold: 40, reappearInterval: 10 })).toBe(false);
+
+    // 10 more opens: triggers again!
+    await AsyncStorage.setItem('follow_up_open_count', '50');
+    expect(await tracker.shouldTrigger({ threshold: 40, reappearInterval: 10 })).toBe(true);
+  });
 });

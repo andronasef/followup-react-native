@@ -3,8 +3,8 @@
 A forced, localized gospel-invitation flow for React Native/Expo apps.
 
 After a configurable number of app opens and a short delay, `FollowUpGate`
-shows a non-dismissible teaser popup that leads into a full-screen, animated
-five-scene narrative — localized to the visitor's device language (10
+shows a dismissible teaser popup that leads into a full-screen, animated
+narrative — localized to the visitor's device language (10
 languages out of the box, with RTL support for Arabic) — ending in two
 response buttons.
 
@@ -15,8 +15,9 @@ package.
 
 - Configurable trigger: `openThreshold` (default 40) and `delay` (default
   10000ms), tracked per install via `@react-native-async-storage/async-storage`.
-- Non-dismissible teaser popup — no close icon, no backdrop dismiss, Android
-  back button disabled while shown.
+- Dismissible teaser popup with snooze: visitors can close the dialog (via
+  "✕" button, "Not Right Now", backdrop tap, or Android back button). When dismissed, it
+  snoozes and can reappear after `reappearInterval` additional app opens (default 10).
 - Full-screen animated flow: SVG illustrations (a cracked globe, falling
   petals, radiating light, a glowing cross, a hand-drawn heart), entrance
   animations, and a "next" button that reveals a couple seconds after each
@@ -26,8 +27,8 @@ package.
   locale via `expo-localization`, with RTL layout for Arabic.
 - Final response: an "interested" callback (`onInterested`) and/or a
   built-in contact screen (WhatsApp / Telegram / Messenger / email), or
-  "not now" — either way
-  it's shown only once per install.
+  "not now" snoozes it for `reappearInterval` additional app opens.
+  An interested response stops future prompts for this install.
 
 ## Getting started
 
@@ -74,7 +75,9 @@ flow without waiting for 40 real app opens.
 ```ts
 <FollowUpGate
   openThreshold={40}      // app opens before the flow can trigger
+  reappearInterval={10}   // opens before dismissed popup reappears
   delay={10000}           // ms to wait after the threshold is hit
+  showPopup={true}        // set to false to bypass the popup dialog and open the flow directly
   contactConfigUrl={'https://...'} // where the contact handles come from
   ctaUrl={'https://...'}  // open a URL instead of the contact screen
   onInterested={() => {}} // called on "interested", before either

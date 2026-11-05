@@ -52,6 +52,16 @@ describe('contactUri', () => {
     expect(contactUri(config, 'email')).toBe('mailto:hi@example.com');
   });
 
+  test('appends prefilledMessage query param to deep links', () => {
+    const msg = 'عاوز اعرف عن اللي انت بتتكلم عنه اكتر!';
+    const encoded = encodeURIComponent(msg);
+
+    expect(contactUri(config, 'whatsapp', msg)).toBe(`https://wa.me/201234567890?text=${encoded}`);
+    expect(contactUri(config, 'telegram', msg)).toBe(`https://t.me/someone?text=${encoded}`);
+    expect(contactUri(config, 'messenger', msg)).toBe(`https://m.me/somepage?text=${encoded}`);
+    expect(contactUri(config, 'email', msg)).toBe(`mailto:hi@example.com?body=${encoded}`);
+  });
+
   test('returns undefined for an unconfigured channel', () => {
     expect(contactUri({}, 'whatsapp')).toBeUndefined();
   });

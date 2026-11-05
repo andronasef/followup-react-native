@@ -1,36 +1,32 @@
-import type { FollowUpStrings } from '../types';
+import type { FollowUpStrings } from "../types";
 
 export const sw: FollowUpStrings = {
-  popupHeadline: 'Kuna aliyekupenda hadi kufa.',
-  popupBody: 'Kuna jambo moyoni mwako linalostahili kusikilizwa. Inachukua dakika moja tu.',
-  learnMoreButton: 'Jifunze Zaidi',
-  interestedButton: 'Nataka Kujua Zaidi',
-  notNowButton: 'Si Sasa',
+  popupHeadline: "Kuna aliyekupenda hadi kufa.",
+  popupBody: "Kuna jambo moyoni mwako linalostahili kusikilizwa. Inachukua dakika moja tu.",
+  learnMoreButton: "Jifunze Zaidi",
+  interestedButton: "Nataka Kujua Zaidi",
+  notNowButton: "Si Sasa",
   scenes: [
-    { kicker: 'Angalia ulimwengu unaokuzunguka…', headline: 'Umechoka. Umevunjika.' },
     {
-      headline: 'Ulimwengu umeanguka.',
-      verse: 'Wote wamefanya dhambi na kupungukiwa na utukufu wa Mungu.',
-      reference: 'Warumi 3:23',
-    },
-    { kicker: 'Lakini Mungu hakutuacha gizani…', headline: 'Kwa sababu alitupenda.' },
-    {
-      headline: 'Jibu ni Kristo.',
-      verse: 'Mimi ndimi njia, na kweli, na uzima.',
-      reference: 'Yohana 14:6',
+      kicker: "Lakini Mungu hakutuacha gizani…",
+      headline: "Jibu ni Kristo.",
+      verse: "Mimi ndimi njia, na kweli, na uzima.",
+      reference: "Yohana 14:6",
     },
     {
-      headline: 'Fungua moyo wako kwake leo.',
-      verse: 'Njoo kwake — nawe utapata amani.',
+      headline: "Fungua moyo wako kwake leo.",
+      verse: "Njoo kwake — nawe utapata amani.",
     },
   ],
   contact: {
-    title: "Ulitaka kujua zaidi kumhusu Yeye.",
-    intro: "Lolote unalojiuliza kuhusu Kristo, uliza tu. Chagua programu inayokufaa na tuzungumze — kwa lugha yako, kwa wakati wako.",
-    whatsappHint: "Jibu la haraka zaidi",
-    telegramHint: "Faragha na nyepesi",
-    messengerHint: "Kama uko Facebook",
-    emailPrompt: "Unapendelea barua pepe?",
-    emailAction: "Tuandikie",
+    title: "Tuko hapa kwa ajili yako daima.",
+    intro:
+      "Iwe una maswali, unahitaji mtu wa kuongea naye, au unataka tu kujua zaidi — tutafurahi sana kuungana nawe. Chagua programu unayopenda zaidi, bila shinikizo na kwa nafasi yako.",
+    whatsappHint: "Mazungumzo ya haraka & moja kwa moja",
+    telegramHint: "Rahisi & ya faragha",
+    messengerHint: "Kupitia Facebook Messenger",
+    emailPrompt: "Unapendelea barua pepe tulivu?",
+    emailAction: "Tuandikie wakati wowote",
+    prefilledMessage: "Nataka kujua zaidi kuhusu kile unachozungumza!",
   },
 };

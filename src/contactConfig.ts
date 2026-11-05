@@ -37,18 +37,23 @@ export function availableChannels(config: ContactConfig): ContactChannel[] {
 }
 
 /** Deep link for `channel`, or undefined when it has no handle configured. */
-export function contactUri(config: ContactConfig, channel: ContactChannel): string | undefined {
+export function contactUri(
+  config: ContactConfig,
+  channel: ContactChannel,
+  prefilledMessage?: string,
+): string | undefined {
   const value = config[channel];
   if (!value) return undefined;
+  const encodedText = prefilledMessage ? encodeURIComponent(prefilledMessage) : undefined;
   switch (channel) {
     case 'whatsapp':
-      return `https://wa.me/${encodeURIComponent(value)}`;
+      return `https://wa.me/${encodeURIComponent(value)}${encodedText ? `?text=${encodedText}` : ''}`;
     case 'telegram':
-      return `https://t.me/${encodeURIComponent(value)}`;
+      return `https://t.me/${encodeURIComponent(value)}${encodedText ? `?text=${encodedText}` : ''}`;
     case 'messenger':
-      return `https://m.me/${encodeURIComponent(value)}`;
+      return `https://m.me/${encodeURIComponent(value)}${encodedText ? `?text=${encodedText}` : ''}`;
     case 'email':
-      return `mailto:${value}`;
+      return `mailto:${value}${encodedText ? `?body=${encodedText}` : ''}`;
   }
 }
 

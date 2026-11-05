@@ -1,6 +1,8 @@
 import React from 'react';
 import { Text } from 'react-native';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SalvationFlow } from '../src/components/SalvationFlow';
 import { FollowUpGate } from '../src/FollowUpGate';
 import { FollowUpTracker } from '../src/FollowUpTracker';
 import { PackageAnalyticsProvider } from '../src/analytics/AnalyticsProvider';
@@ -41,6 +43,19 @@ describe('with no analytics at all', () => {
     fireEvent.press(screen.getByText(/Learn More/i));
 
     // The flow mounted without a provider — nothing threw, children intact.
+    expect(screen.getByText('app content')).toBeTruthy();
+  });
+
+  it('bypasses teaser popup and opens flow directly when showPopup is false', async () => {
+    render(
+      <FollowUpGate openThreshold={1} delay={0} showPopup={false}>
+        <Child />
+      </FollowUpGate>
+    );
+
+    // Flow is opened directly, so "Learn More" teaser button is not rendered
+    expect(screen.queryByText(/Learn More/i)).toBeNull();
+    // Host app content remains rendered underneath the modal
     expect(screen.getByText('app content')).toBeTruthy();
   });
 });
@@ -124,5 +139,79 @@ describe('event emission', () => {
 
     await waitFor(() => expect(screen.getByText(/Learn More/i)).toBeTruthy());
     expect(screen.getByText('app content')).toBeTruthy();
+  });
+
+  it('closing the teaser popup dismisses it and emits teaser_dismissed', async () => {
+    const fake = fakeAnalytics();
+
+    render(
+      <PackageAnalyticsProvider analytics={fake}>
+        <FollowUpGate openThreshold={1} delay={0}>
+          <Child />
+        </FollowUpGate>
+      </PackageAnalyticsProvider>
+    );
+
+    await waitFor(() => expect(fake.eventNames()).toContain('followup_teaser_shown'));
+
+    fireEvent.press(screen.getByLabelText('Close'));
+
+    await waitFor(() => expect(fake.eventNames()).toContain('followup_teaser_dismissed'));
+    expect(fake.eventNames()).not.toContain('followup_scene_view');
+    expect(screen.queryByText(/Learn More/i)).toBeNull();
+  });
+
+  it('dismissing the teaser popup via Not Right Now button dismisses it and emits teaser_dismissed', async () => {
+    const fake = fakeAnalytics();
+
+    render(
+      <PackageAnalyticsProvider analytics={fake}>
+        <FollowUpGate openThreshold={1} delay={0}>
+          <Child />
+        </FollowUpGate>
+      </PackageAnalyticsProvider>
+    );
+
+    await waitFor(() => expect(fake.eventNames()).toContain('followup_teaser_shown'));
+
+    fireEvent.press(screen.getByText(/Not Right Now/i));
+
+    await waitFor(() => expect(fake.eventNames()).toContain('followup_teaser_dismissed'));
+    expect(fake.eventNames()).not.toContain('followup_scene_view');
+    expect(screen.queryByText(/Learn More/i)).toBeNull();
+  });
+});
+
+
+describe('deferring the invitation', () => {
+  it.each(['Close', 'Not Right Now'])('%s snoozes and allows a later popup', async (action) => {
+    const tracker = await FollowUpTracker.create();
+    const gate = render(<FollowUpGate openThreshold={1} reappearInterval={10} delay={0}><Child /></FollowUpGate>);
+    await waitFor(() => expect(screen.getByText(/Learn More/i)).toBeTruthy());
+    fireEvent.press(action === 'Close' ? screen.getByLabelText('Close') : screen.getByText(/Not Right Now/i));
+    await waitFor(() => expect(screen.queryByText(/Learn More/i)).toBeNull());
+    expect(await tracker.getHasBeenShown()).toBe(false);
+    expect(await tracker.getLastDismissedOpen()).toBe(1);
+    gate.unmount();
+
+    // Simulate persisted open counts from subsequent process launches.
+    await AsyncStorage.setItem('follow_up_open_count', '10');
+    expect(await tracker.shouldTrigger({ threshold: 1, reappearInterval: 10 })).toBe(false);
+    await AsyncStorage.setItem('follow_up_open_count', '11');
+    render(<FollowUpGate openThreshold={1} reappearInterval={10} delay={0}><Child /></FollowUpGate>);
+    await waitFor(() => expect(screen.getByText(/Learn More/i)).toBeTruthy());
+  });
+
+  it('Not Now in the full flow also snoozes instead of completing the invitation', async () => {
+    const tracker = await FollowUpTracker.create();
+    const gate = render(<FollowUpGate openThreshold={1} delay={0} showPopup={false}><Child /></FollowUpGate>);
+    await waitFor(() => expect(gate.UNSAFE_getByType(SalvationFlow)).toBeTruthy());
+    fireEvent(gate.UNSAFE_getByType(SalvationFlow), 'onNotNow');
+    await waitFor(() => expect(gate.UNSAFE_queryByType(SalvationFlow)).toBeNull());
+    expect(await tracker.getHasBeenShown()).toBe(false);
+    expect(await tracker.getLastDismissedOpen()).toBe(1);
+    expect(await tracker.shouldTrigger({ threshold: 1 })).toBe(false);
+    await AsyncStorage.setItem('follow_up_open_count', '11');
+    expect(await tracker.shouldTrigger({ threshold: 1 })).toBe(true);
   });
 });

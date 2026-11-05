@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet, I18nManager } from 'react-native';
+import { View, Text, Pressable, ScrollView, StyleSheet, I18nManager, SafeAreaView } from 'react-native';
 import * as Linking from 'expo-linking';
 import { colors } from '../colors';
 import { SceneFrame } from './SceneFrame';
@@ -25,18 +25,21 @@ export function ContactScreen({
   config,
   strings,
   isRtl,
+  onClose,
   onChannelOpened,
 }: {
   config: ContactConfig;
   strings: ContactStrings;
   isRtl: boolean;
+  /** Fired when the user dismisses the contact screen. */
+  onClose?: () => void;
   /** Fired with the channel name when a visitor opens one. Analytics only. */
   onChannelOpened?: (channel: ContactChannel) => void;
 }) {
   const chat = availableChannels(config).filter((c): c is Exclude<ContactChannel, 'email'> => c !== 'email');
 
   const open = async (channel: ContactChannel) => {
-    const uri = contactUri(config, channel);
+    const uri = contactUri(config, channel, strings.prefilledMessage);
     if (!uri) return;
     onChannelOpened?.(channel);
     await Linking.openURL(uri);
@@ -45,12 +48,13 @@ export function ContactScreen({
   const dir = { writingDirection: isRtl ? ('rtl' as const) : ('ltr' as const) };
 
   return (
-    <SceneFrame sunOpacity={0.5}>
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+    <View style={styles.fill}>
+      <SceneFrame sunOpacity={0.5}>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
         <Text style={[styles.title, dir]}>{strings.title}</Text>
         <Text style={[styles.intro, dir]}>{strings.intro}</Text>
 
@@ -79,6 +83,22 @@ export function ContactScreen({
         )}
       </ScrollView>
     </SceneFrame>
+    {onClose && (
+      <SafeAreaView style={styles.safeTop} pointerEvents="box-none">
+        <View style={[styles.closeRow, isRtl && styles.closeRowRtl]} pointerEvents="box-none">
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close"
+            onPress={onClose}
+            hitSlop={12}
+            style={({ pressed }) => [styles.closeCircle, pressed && styles.closePressed]}
+          >
+            <Text style={styles.closeIcon}>✕</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    )}
+  </View>
   );
 }
 
@@ -87,6 +107,40 @@ function hintFor(channel: Exclude<ContactChannel, 'email'>, s: ContactStrings): 
 }
 
 const styles = StyleSheet.create({
+  fill: { flex: 1 },
+  safeTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
+  closeRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+  },
+  closeRowRtl: {
+    flexDirection: 'row-reverse',
+  },
+  closeCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFCF5',
+    borderWidth: 1,
+    borderColor: 'rgba(111,94,71,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  closePressed: { opacity: 0.7 },
+  closeIcon: { fontSize: 16, fontWeight: '600', color: colors.soft, lineHeight: 18 },
   scroll: { alignSelf: 'stretch' },
   scrollContent: { flexGrow: 1, justifyContent: 'center' },
   title: { fontSize: 28, fontWeight: '700', color: colors.ink, textAlign: 'center', lineHeight: 36 },

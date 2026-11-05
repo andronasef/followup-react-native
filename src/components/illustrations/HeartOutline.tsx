@@ -10,16 +10,17 @@ const AnimatedPath = Animated.createAnimatedComponent(Path);
 const APPROX_PATH_LENGTH = 300;
 
 /** A hand-drawn heart outline that traces itself in as `growth` runs 0→1. */
-export function HeartOutline({ growth, size = 90 }: { growth: SharedValue<number>; size?: number }) {
+export function HeartOutline({ growth, size = 120 }: { growth: SharedValue<number>; size?: number }) {
   const w = size;
   const h = size;
   const d = `M${w * 0.5},${h * 0.92} C${w * -0.1},${h * 0.55} ${w * 0.08},${h * 0.05} ${w * 0.5},${h * 0.28} C${w * 0.92},${h * 0.05} ${w * 1.1},${h * 0.55} ${w * 0.5},${h * 0.92} Z`;
+  const pathLength = size * 3.4;
 
   const animatedProps = useAnimatedProps(
     () => ({
-      strokeDashoffset: APPROX_PATH_LENGTH * (1 - growth.value),
+      strokeDashoffset: pathLength * (1 - growth.value),
     }),
-    [growth]
+    [growth, pathLength]
   );
 
   return (
@@ -31,7 +32,7 @@ export function HeartOutline({ growth, size = 90 }: { growth: SharedValue<number
           strokeWidth={4}
           strokeLinecap="round"
           fill="none"
-          strokeDasharray={APPROX_PATH_LENGTH}
+          strokeDasharray={pathLength}
           animatedProps={animatedProps}
         />
       </Svg>

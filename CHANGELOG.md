@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.3.0
+
+### Added
+
+- Configurable popup snooze with `reappearInterval` (default: 10 additional app opens), and `showPopup` / `showTeaser` options to open the flow directly.
+- Localized copy variants and configurable `copyVariant` selection.
+- Close controls on the contact screen and a "Not Right Now" button on the teaser.
+- Localized prefilled contact messages.
+
+### Changed
+
+- Closing the popup defers the invitation; choosing "Not Right Now" also snoozes it instead of permanently suppressing future prompts.
+- Updated the invitation scenes and contact messages across supported locales.
+
+### Fixed
+
+- Preserve eligibility after dismissal and show the popup again when the configured interval is reached.
+
+
 ## 0.2.0
 
 The flow now ends on a contact screen instead of an external link, with
